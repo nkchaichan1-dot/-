@@ -87,109 +87,114 @@ export default function BudgetChart({ tasks }: BudgetChartProps) {
                 กราฟเปรียบเทียบงบประมาณตั้งต้น (Budget) กับค่าใช้จ่ายจริง (Actual Cost) หน่วย: บาท
               </p>
             </div>
-            <div className="flex gap-4 text-xs font-semibold">
+            <div className="flex gap-4 text-xs font-semibold shrink-0">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 bg-indigo-500 rounded-xs"></div>
                 <span className="text-slate-500">งบประมาณ</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 bg-rose-400 rounded-sm"></div>
+                <div className="w-3 h-3 bg-emerald-400 rounded-xs"></div>
                 <span className="text-slate-500">จ่ายจริง</span>
               </div>
             </div>
           </div>
 
           {/* SVG Chart */}
-          <div className="relative h-72 w-full mt-4 flex items-end border-b border-l border-slate-200 pb-1 pl-2">
+          <div className="relative h-72 w-full mt-4 border-b border-l border-slate-200 pb-1 pl-2 overflow-hidden">
             {projectSummaries.length === 0 ? (
               <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
                 ไม่มีข้อมูลโครงการสำหรับตัวกรองนี้
               </div>
             ) : (
-              <div className="flex justify-around items-end w-full h-full pt-6 relative">
-                {/* Horizontal grid lines */}
-                {[0, 0.25, 0.5, 0.75, 1].map((ratio, gridIdx) => (
-                  <div
-                    key={gridIdx}
-                    className="absolute left-0 right-0 border-t border-dashed border-slate-100 pointer-events-none text-[9px] font-semibold text-slate-300 flex justify-end pr-1"
-                    style={{ bottom: `${ratio * 100}%` }}
-                  >
-                    <span>{formatCurrency(maxVal * ratio)}</span>
-                  </div>
-                ))}
-
-                {projectSummaries.map((proj) => {
-                  const budgetHeight = (proj.budget / maxVal) * 100;
-                  const costHeight = (proj.actualCost / maxVal) * 100;
-                  const isHovered = hoveredProject === proj.projectId;
-
-                  return (
+              <div className="w-full h-full overflow-x-auto scrollbar-thin pb-2">
+                <div 
+                  className="flex justify-around items-end h-full pt-6 relative pb-1"
+                  style={{ minWidth: `${Math.max(500, projectSummaries.length * 52)}px` }}
+                >
+                  {/* Horizontal grid lines */}
+                  {[0, 0.25, 0.5, 0.75, 1].map((ratio, gridIdx) => (
                     <div
-                      key={proj.projectId}
-                      className="flex flex-col items-center group relative px-1 flex-1 max-w-[80px]"
-                      onMouseEnter={() => setHoveredProject(proj.projectId)}
-                      onMouseLeave={() => setHoveredProject(null)}
+                      key={gridIdx}
+                      className="absolute left-0 right-0 border-t border-dashed border-slate-100 pointer-events-none text-[9px] font-semibold text-slate-300 flex justify-end pr-1"
+                      style={{ bottom: `${ratio * 100}%` }}
                     >
-                      {/* Hover Tooltip Overlay */}
-                      <AnimatePresence>
-                        {isHovered && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: -8, scale: 1 }}
-                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            transition={{ duration: 0.15 }}
-                            className="absolute bottom-full mb-2 bg-slate-900/95 backdrop-blur-xs text-white text-xs p-3 rounded-xl shadow-lg z-30 min-w-[200px] pointer-events-none border border-slate-800"
-                          >
-                            <p className="font-bold border-b border-slate-800 pb-1 mb-1.5 text-indigo-200">
-                              {proj.projectName}
-                            </p>
-                            <div className="space-y-1 font-mono">
-                              <div className="flex justify-between gap-4">
-                                <span className="text-slate-400">ID:</span>
-                                <span>{proj.projectId}</span>
-                              </div>
-                              <div className="flex justify-between gap-4">
-                                <span className="text-slate-400">งบตั้งต้น:</span>
-                                <span>{formatCurrency(proj.budget)}</span>
-                              </div>
-                              <div className="flex justify-between gap-4">
-                                <span className="text-slate-400">จ่ายจริง:</span>
-                                <span className={proj.actualCost > proj.budget ? "text-rose-400 font-bold" : "text-emerald-400"}>
-                                  {formatCurrency(proj.actualCost)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between gap-4 border-t border-slate-800 pt-1 mt-1 font-sans text-[11px]">
-                                <span className="text-slate-400">ความคืบหน้าเฉลี่ย:</span>
-                                <span className="text-amber-400 font-bold">{proj.averageProgress.toFixed(1)}%</span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Bar Group container */}
-                      <div className="flex items-end gap-1.5 h-48 w-full justify-center relative">
-                        {/* Budget Bar */}
-                        <div
-                          className="w-4 bg-indigo-500 rounded-t-xs hover:bg-indigo-600 transition-colors cursor-pointer relative"
-                          style={{ height: `${Math.max(budgetHeight, 2)}%` }}
-                        ></div>
-                        {/* Actual Cost Bar */}
-                        <div
-                          className={`w-4 rounded-t-xs transition-colors cursor-pointer relative ${
-                            proj.actualCost > proj.budget ? "bg-rose-400 hover:bg-rose-500" : "bg-emerald-400 hover:bg-emerald-500"
-                          }`}
-                          style={{ height: `${Math.max(costHeight, 2)}%` }}
-                        ></div>
-                      </div>
-
-                      {/* Label */}
-                      <span className="text-[10px] font-bold text-slate-500 mt-2 truncate w-full text-center">
-                        {proj.projectId}
-                      </span>
+                      <span>{formatCurrency(maxVal * ratio)}</span>
                     </div>
-                  );
-                })}
+                  ))}
+
+                  {projectSummaries.map((proj) => {
+                    const budgetHeight = (proj.budget / maxVal) * 100;
+                    const costHeight = (proj.actualCost / maxVal) * 100;
+                    const isHovered = hoveredProject === proj.projectId;
+
+                    return (
+                      <div
+                        key={proj.projectId}
+                        className="flex flex-col items-center group relative px-1 flex-1 max-w-[80px]"
+                        onMouseEnter={() => setHoveredProject(proj.projectId)}
+                        onMouseLeave={() => setHoveredProject(null)}
+                      >
+                        {/* Hover Tooltip Overlay */}
+                        <AnimatePresence>
+                          {isHovered && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: -8, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute bottom-full mb-2 bg-slate-900/95 backdrop-blur-xs text-white text-xs p-3 rounded-xl shadow-lg z-30 min-w-[200px] pointer-events-none border border-slate-800"
+                            >
+                              <p className="font-bold border-b border-slate-800 pb-1 mb-1.5 text-indigo-200">
+                                {proj.projectName}
+                              </p>
+                              <div className="space-y-1 font-mono">
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-slate-400">ID:</span>
+                                  <span>{proj.projectId}</span>
+                                </div>
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-slate-400">งบตั้งต้น:</span>
+                                  <span>{formatCurrency(proj.budget)}</span>
+                                </div>
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-slate-400">จ่ายจริง:</span>
+                                  <span className={proj.actualCost > proj.budget ? "text-rose-400 font-bold" : "text-emerald-400"}>
+                                    {formatCurrency(proj.actualCost)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between gap-4 border-t border-slate-800 pt-1 mt-1 font-sans text-[11px]">
+                                  <span className="text-slate-400">ความคืบหน้าเฉลี่ย:</span>
+                                  <span className="text-amber-400 font-bold">{proj.averageProgress.toFixed(1)}%</span>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Bar Group container */}
+                        <div className="flex items-end gap-1.5 h-48 w-full justify-center relative">
+                          {/* Budget Bar */}
+                          <div
+                            className="w-4 bg-indigo-500 rounded-t-xs hover:bg-indigo-600 transition-colors cursor-pointer relative"
+                            style={{ height: `${Math.max(budgetHeight, 2)}%` }}
+                          ></div>
+                          {/* Actual Cost Bar */}
+                          <div
+                            className={`w-4 rounded-t-xs transition-colors cursor-pointer relative ${
+                              proj.actualCost > proj.budget ? "bg-rose-400 hover:bg-rose-500" : "bg-emerald-400 hover:bg-emerald-500"
+                            }`}
+                            style={{ height: `${Math.max(costHeight, 2)}%` }}
+                          ></div>
+                        </div>
+
+                        {/* Label */}
+                        <span className="text-[10px] font-bold text-slate-500 mt-2 truncate w-full text-center">
+                          {proj.projectId}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

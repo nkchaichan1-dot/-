@@ -379,25 +379,20 @@ export default function TaskTable({ tasks }: TaskTableProps) {
 
       {/* Responsive Table Container */}
       <div className="overflow-x-auto rounded-lg border border-slate-200">
-        <table className="w-full text-left border-collapse min-w-[1000px]">
+        <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
-              <th className="p-4 w-16">ID โครงการ</th>
-              <th className="p-4 w-52">ชื่อโครงการ</th>
-              <th className="p-4 w-32">ประเภท & พื้นที่</th>
-              <th className="p-4 w-32">สุขภาพโครงการ</th>
-              <th className="p-4 w-36">ชื่องานย่อย</th>
-              <th className="p-4 w-28">สถานะงาน</th>
-              <th className="p-4 w-20">ความสำคัญ</th>
-              <th className="p-4 w-28">ผู้รับผิดชอบ</th>
-              <th className="p-4 w-28 text-right">งบประมาณ / จ่ายจริง</th>
-              <th className="p-4 w-24 text-right">คืบหน้า (%)</th>
+              <th className="p-4 w-1/4">โครงการ & รายละเอียด</th>
+              <th className="p-4 w-1/4">งานย่อย & สถานะ</th>
+              <th className="p-4 w-1/6">ผู้รับผิดชอบ</th>
+              <th className="p-4 w-1/6 text-right">งบประมาณ / จ่ายจริง</th>
+              <th className="p-4 w-1/6 text-right">ความคืบหน้า (%)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
             {paginatedTasks.length === 0 ? (
               <tr>
-                <td colSpan={10} className="p-12 text-center text-slate-400">
+                <td colSpan={5} className="p-12 text-center text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <AlertCircle size={28} className="text-slate-300" />
                     <span>ไม่พบงานโครงการใด ๆ ตรงตามตัวกรองที่ระบุ</span>
@@ -409,72 +404,72 @@ export default function TaskTable({ tasks }: TaskTableProps) {
                 const costOver = task.actualCost > task.budget;
                 return (
                   <tr key={`${task.taskId}-${task.projectId}-${index}`} className="hover:bg-slate-50/50 transition-colors">
-                    {/* Project ID */}
-                    <td className="p-4 font-bold text-indigo-600 font-mono">
-                      {task.projectId}
-                    </td>
-
-                    {/* Project Name */}
-                    <td className="p-4 font-bold text-slate-800 leading-snug">
-                      {task.projectName}
-                    </td>
-
-                    {/* Type & Location */}
-                    <td className="p-4 leading-normal">
-                      <p className="font-semibold text-slate-700">{task.projectType}</p>
-                      <p className="text-[10px] text-slate-400 flex items-center gap-0.5 mt-0.5">
-                        📍 {task.location}
+                    {/* Project & Details */}
+                    <td className="p-4 leading-normal align-top">
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className="font-bold text-indigo-600 font-mono text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-sm">
+                          ID: {task.projectId}
+                        </span>
+                        <span className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-xs border ${getProjectStatusStyles(task.projectStatus)}`}>
+                          {task.projectStatus}
+                        </span>
+                      </div>
+                      <p className="font-bold text-slate-800 leading-snug text-sm">
+                        {task.projectName}
                       </p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-400 mt-1">
+                        <span className="font-semibold text-slate-500">{task.projectType}</span>
+                        <span>•</span>
+                        <span>📍 {task.location}</span>
+                      </div>
                     </td>
 
-                    {/* Project Status */}
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-xs border ${getProjectStatusStyles(task.projectStatus)}`}>
-                        {task.projectStatus}
-                      </span>
-                    </td>
-
-                    {/* Task Name */}
-                    <td className="p-4 font-medium text-slate-600 max-w-xs truncate">
-                      {task.taskName}
-                    </td>
-
-                    {/* Task Status */}
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-xs border ${getTaskStatusStyles(task.taskStatus)}`}>
-                        {task.taskStatus}
-                      </span>
-                    </td>
-
-                    {/* Priority */}
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-xs border ${getPriorityStyles(task.priority)}`}>
-                        {task.priority}
-                      </span>
+                    {/* Task Details & Status */}
+                    <td className="p-4 leading-normal align-top">
+                      <p className="font-semibold text-slate-700 mb-2 leading-snug">
+                        {task.taskName}
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded-xs border ${getTaskStatusStyles(task.taskStatus)}`}>
+                          {task.taskStatus}
+                        </span>
+                        <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded-xs border ${getPriorityStyles(task.priority)}`}>
+                          {task.priority}
+                        </span>
+                      </div>
                     </td>
 
                     {/* Assigned To */}
-                    <td className="p-4 font-semibold text-slate-600">
-                      {task.assignedTo}
-                      <p className="text-[9px] text-slate-400 font-mono mt-0.5">⏱️ {task.hoursSpent} ชม.</p>
-                    </td>
-
-                    {/* Budget & Cost */}
-                    <td className="p-4 text-right leading-normal font-mono">
-                      <p className="font-bold text-slate-700">{formatCurrency(task.budget)}</p>
-                      <p className={`text-[10px] font-semibold mt-0.5 ${costOver ? "text-rose-600 font-bold" : "text-emerald-600"}`}>
-                        {task.actualCost > 0 ? formatCurrency(task.actualCost) : "ยังไม่เบิกจ่าย"}
+                    <td className="p-4 align-top leading-normal">
+                      <p className="font-semibold text-slate-600">{task.assignedTo}</p>
+                      <p className="text-[10px] text-slate-400 font-mono mt-1 flex items-center gap-1">
+                        <span>⏱️</span>
+                        <span>ใช้เวลา {task.hoursSpent} ชม.</span>
                       </p>
                     </td>
 
+                    {/* Budget & Cost */}
+                    <td className="p-4 text-right align-top leading-normal font-mono">
+                      <div className="text-xs">
+                        <span className="text-[10px] text-slate-400 block font-sans">งบประมาณ</span>
+                        <p className="font-bold text-slate-700">{formatCurrency(task.budget)}</p>
+                      </div>
+                      <div className="text-xs mt-2">
+                        <span className="text-[10px] text-slate-400 block font-sans">จ่ายจริง</span>
+                        <p className={`font-bold ${costOver ? "text-rose-600 font-extrabold" : "text-emerald-600"}`}>
+                          {task.actualCost > 0 ? formatCurrency(task.actualCost) : "-"}
+                        </p>
+                      </div>
+                    </td>
+
                     {/* Progress */}
-                    <td className="p-4 text-right">
+                    <td className="p-4 text-right align-top">
                       <div className="flex flex-col items-end">
-                        <span className="font-bold font-mono text-slate-800">
+                        <span className="font-bold font-mono text-slate-800 text-sm">
                           {(task.progress * 100).toFixed(0)}%
                         </span>
                         {/* Progress mini indicator */}
-                        <div className="w-16 bg-slate-100 h-1 rounded-xs mt-1.5 overflow-hidden">
+                        <div className="w-20 bg-slate-100 h-1.5 rounded-xs mt-1.5 overflow-hidden">
                           <div
                             className={`h-full ${task.progress >= 1 ? "bg-emerald-500" : "bg-indigo-500"}`}
                             style={{ width: `${task.progress * 100}%` }}
