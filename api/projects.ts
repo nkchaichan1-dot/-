@@ -175,19 +175,44 @@ export default async function handler(req: any, res: any) {
     "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
   );
 
+  const sendJson = (statusCode: number, payload: any) => {
+    if (typeof res.status === "function") {
+      return res.status(statusCode).json(payload);
+    } else {
+      res.statusCode = statusCode;
+      res.setHeader("Content-Type", "application/json");
+      return res.end(JSON.stringify(payload));
+    }
+  };
+
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+    if (typeof res.status === "function") {
+      return res.status(200).end();
+    } else {
+      res.statusCode = 200;
+      return res.end();
+    }
   }
 
   try {
     const now = Date.now();
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1Rfsv4rmmPu_rZYlgkjr85fucY2s1CUWDWudG4RPlk7U/export?format=csv&gid=0";
 
-    const forceRefresh = req.query?.refresh === "true";
+    let forceRefresh = false;
+    if (req.query && req.query.refresh) {
+      forceRefresh = req.query.refresh === "true";
+    } else if (req.url) {
+      try {
+        const parsedUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+        forceRefresh = parsedUrl.searchParams.get("refresh") === "true";
+      } catch (e) {
+        // Ignored, fallback to false
+      }
+    }
 
     // Serve from cache if valid and not force-refreshing
     if (cache.data && (now - cache.lastUpdated < CACHE_TTL_MS) && !forceRefresh) {
-      return res.status(200).json({
+      return sendJson(200, {
         tasks: cache.data,
         lastUpdated: cache.lastUpdated,
         cached: true,
@@ -203,7 +228,7 @@ export default async function handler(req: any, res: any) {
     cache.data = tasks;
     cache.lastUpdated = now;
 
-    return res.status(200).json({
+    return sendJson(200, {
       tasks,
       lastUpdated: now,
       cached: false,
@@ -214,7 +239,7 @@ export default async function handler(req: any, res: any) {
     // Serve stale cache as fallback if server is down, else error
     if (cache.data) {
       console.log("[Vercel API Warning] Serving stale cached data as fallback...");
-      return res.status(200).json({
+      return sendJson(200, {
         tasks: cache.data,
         lastUpdated: cache.lastUpdated,
         cached: true,
@@ -223,7 +248,7 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    return res.status(500).json({
+    return sendJson(500, {
       error: "Failed to load project dashboard data from Google Sheets.",
       details: error.message,
     });
