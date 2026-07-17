@@ -1,0 +1,6 @@
+{
+  "name": "Project Dashboard",
+  "description": "A comprehensive dashboard for visualizing project metrics, budgets, task progress, and geographical status from Google Sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
